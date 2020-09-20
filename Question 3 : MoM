@@ -1,0 +1,24 @@
+WITH
+Runs_Clubbed (match_id1, batsman_id, runs) AS
+(
+select byb.Match_Id as match_id1, byb.striker as batsman_id, sum(ifnull(runs_scored,0)) as runs
+from Ball_by_Ball byb
+Left join 
+    (select Match_Id, Innings_No, Over_Id, Ball_Id, SUM(runs_scored) as runs_scored
+    from Batsman_Scored
+    group by Match_Id, Innings_No, Over_Id, Ball_Id) bs
+    on (bs.Match_Id = byb.Match_Id and bs.Innings_No = byb.Innings_No and bs.Over_Id = byb.Over_Id and bs.Ball_Id = byb.Ball_Id)
+Group by byb.Match_Id, byb.striker
+),
+
+Wickets_Clubbed (match_id1, bowler_id, wickets)AS
+(
+select byb.Match_Id as match_id1, byb.bowler as bowler_id, sum(ifnull(player_out,0)) as wickets
+from Ball_by_Ball byb
+Left join 
+    (select Match_Id, Innings_No, Over_Id, Ball_Id, count(player_out) as player_out
+    from Wicket_Taken 
+    group by Match_Id, Innings_No, Over_Id, Ball_Id) wt
+    on (wt.Match_Id = byb.Match_Id and wt.Innings_No = byb.Innings_No and wt.Over_Id = byb.Over_Id and wt.Ball_Id = byb.Ball_Id)
+Group by byb.Match_Id, byb.bowler
+)
