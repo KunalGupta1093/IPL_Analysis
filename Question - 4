@@ -1,0 +1,38 @@
+WITH		
+Runs_Clubbed (innings_no1, match_id1, batsman_id, bowler_id, Bowler_Name, team_batting, Batting_Order, runs, Balls) AS		
+(		
+select byb.Innings_No as innings_no1, 		
+  byb.Match_Id as match_id1, 		
+  byb.striker as batsman_id, 		
+  byb.bowler AS bowler_id,		
+  player.Player_Name as Bowler_name,		
+  byb.team_batting AS team_batting,		
+  byb.Striker_Batting_Position AS batting_order,		
+  sum(ifnull(runs_scored,0)) as runs, 		
+  count(byb.ball_Id) as Balls 		
+from Ball_by_Ball byb		
+Left join 		
+    (select Match_Id, Innings_No, Over_Id, Ball_Id, SUM(runs_scored) as runs_scored		
+    from Batsman_Scored		
+    group by Match_Id, Innings_No, Over_Id, Ball_Id) bs		
+    on (bs.Match_Id = byb.Match_Id and bs.Innings_No = byb.Innings_No and bs.Over_Id = byb.Over_Id and bs.Ball_Id = byb.Ball_Id)		
+ LEFT JOIN 		
+  	Player ON byb.bowler = player.Player_Id	
+Group by innings_no1, match_id1, batsman_id, bowler_id,bowler_name, batting_order,team_batting		
+)		
+		
+		
+		
+SELECT match.season_id, Venue.Venue_Name, Team_Name, Player.player_name ,sum(Runs_Clubbed.runs) AS Total_Runs, sum(Runs_Clubbed.balls) AS Total_Balls, Runs_Clubbed.innings_no1 as Innings_No, Bowler_Name, Batting_Order		
+from Player		
+JOIN Runs_Clubbed		
+	ON Player.Player_ID =Runs_Clubbed.batsman_id	
+JOIN Match		
+	On Runs_Clubbed.Match_id1 = Match.Match_id	
+JOIN Venue		
+	ON	Match.Venue_Id = Venue.Venue_Id
+LEFT JOIN Team		
+	On Team.Team_Id = Runs_Clubbed.team_batting	
+GROUP by player.player_name, Runs_Clubbed.innings_no1, bowler_name, batting_order, Team_batting,  match.season_id		
+HAVING player_name  = 'MS Dhoni'		
+ORDER BY match.season_id, Venue.Venue_Name, Bowler_Name		
