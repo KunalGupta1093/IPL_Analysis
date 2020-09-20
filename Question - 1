@@ -1,0 +1,17 @@
+select byb.Match_Id, player.player_name, sum(ifnull(bs1.Runs_Scored,0)) as Runs, sum(ifnull(er1.Extra_Runs,0)) as Extras, count(ifnull(byb.ball_id,0))/6.0 as Overs, (sum(ifnull(bs1.Runs_Scored,0)) + sum(ifnull(er1.Extra_Runs,0)))/(count(ifnull(byb.ball_id,0))/6.0) as Economy_Rate	
+from Ball_by_Ball byb	
+Left join 	
+    (select Match_Id, Innings_No, Over_Id, Ball_Id, Extra_Runs	
+    from Extra_Runs 	
+    group by Match_Id, Innings_No, Over_Id, Ball_Id) er1 	
+    on (er1.Match_Id = byb.Match_Id and er1.Innings_No = byb.Innings_No and er1.Over_Id = byb.Over_Id and er1.Ball_Id = byb.Ball_Id)	
+Left join 	
+    (select Match_Id, Innings_No, Over_Id, Ball_Id, Runs_Scored	
+    from Batsman_Scored  	
+    group by Match_Id, Innings_No, Over_Id, Ball_Id) bs1 	
+    on (bs1.Match_Id = byb.Match_Id and bs1.Innings_No = byb.Innings_No and bs1.Over_Id = byb.Over_Id and bs1.Ball_Id = byb.Ball_Id)	
+LEFT JOIN 	
+	Player ON byb.bowler = Player.player_id
+group by byb.match_id, byb.bowler	
+order by  Economy_Rate desc	
+limit 1;	
