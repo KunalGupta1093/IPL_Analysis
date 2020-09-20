@@ -1,0 +1,6 @@
+SELECT Team.team_name, round( (sum(CASE WHEN Toss_Winner = Match_Winner Then 1 else 0 end)*100.00) / count(Toss_Winner) ,2) || "%" as Winning_Percentage	
+FROM Match 	
+LEFT JOIN Team	
+	on Match.Toss_Winner = Team.Team_Id
+Group by team_name	
+ORDER by Winning_Percentage DESC	
